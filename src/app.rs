@@ -106,6 +106,20 @@ pub fn run_app() {
 
     let instance = back::Instance::create("gfx-rs quad", 1).expect("Failed to create an instance!");
 
+    #[cfg(target_os = "android")]
+    {
+        println!("Waiting for NativeScreen");
+        loop {
+            match ndk_glue::native_window().as_ref() {
+                Some(_) => {
+                    println!("NativeScreen Found:{:?}", ndk_glue::native_window());
+                    break;
+                }
+                None => (),
+            }
+        }
+    }
+
     let surface = unsafe {
         instance
             .create_surface(&window)
