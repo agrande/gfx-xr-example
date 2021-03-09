@@ -72,7 +72,7 @@ version = "0.7"
 optional = true
 
 [target.'cfg(target_os = "android")'.dependencies]
-ndk-glue = "0.3.0"
+ndk-glue = "0.2.1"
 
 [package.metadata.android]
 build_targets = ["aarch64-linux-android"]
