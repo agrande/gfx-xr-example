@@ -30,6 +30,12 @@ use hal::{
     window,
 };
 
+#[cfg(feature = "vr")]
+use hal::{
+    pso::XrFormFactor,
+    xr::{InstanceExtXr, XrInstance},
+};
+
 use std::{
     borrow::Borrow,
     io::Cursor,
@@ -65,8 +71,17 @@ pub fn run_app() {
     #[cfg(target_arch = "wasm32")]
     console_log::init_with_level(log::Level::Debug).unwrap();
 
-    // #[cfg(not(target_arch = "wasm32"))]
-    // env_logger::init();
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        #[cfg(target_os = "android")]
+        let _ = env_logger::builder()
+            // Include all events in tests
+            .filter_level(log::LevelFilter::max())
+            // Ignore errors initializing the logger if tests race to configure it
+            .try_init();
+        #[cfg(not(target_os = "android"))]
+        env_logger::init();
+    }
 
     #[cfg(not(any(
         feature = "vulkan",
@@ -106,7 +121,7 @@ pub fn run_app() {
 
     let instance = back::Instance::create("gfx-rs quad", 1).expect("Failed to create an instance!");
 
-    #[cfg(target_os = "android")]
+    #[cfg(all(target_os = "android", not(feature = "vr")))]
     {
         println!("Waiting for NativeScreen");
         loop {
@@ -134,7 +149,19 @@ pub fn run_app() {
         adapters.remove(0)
     };
 
+    // Setup VR
+    #[cfg(feature = "vr")]
+    let xr_instance = instance
+        .create_xr_instance("gfx-rs quad", 1, None, None, &[], &[])
+        .expect("Failed to create XR instance");
+
     let mut renderer = Renderer::new(instance, surface, adapter);
+
+    #[cfg(feature = "vr")]
+    {
+        let xr_system = xr_instance.get_system(XrFormFactor::HeadMountedDisplay);
+        let _session = xr_instance.create_session(&xr_system, &renderer.device);
+    }
 
     renderer.render();
 

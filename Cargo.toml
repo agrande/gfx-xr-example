@@ -6,6 +6,7 @@ edition = "2018"
 
 [features]
 default = []
+vr = []
 metal = ["gfx-backend-metal"]
 gl = ["gfx-backend-gl"]
 dx11 = ["gfx-backend-dx11"]
