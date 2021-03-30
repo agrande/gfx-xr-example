@@ -2,5 +2,6 @@
   "rust-analyzer.cargo.features": [
     "vulkan",
     "vr"
-  ]
+  ],
+  "rust-analyzer.cargo.target": "aarch64-linux-android"
 }
