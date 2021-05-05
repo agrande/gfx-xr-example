@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #[cfg(feature = "dx11")]
 extern crate gfx_backend_dx11 as back;
 #[cfg(feature = "dx12")]
@@ -144,9 +145,8 @@ pub fn run_app() {
             .create_surface(&window)
             .expect("Failed to create a surface!")
     });
-    #[cfg(feature = "vr")]
-    let surface = None;
 
+    #[cfg(not(feature = "vr"))]
     let adapter = {
         let mut adapters = instance.enumerate_adapters();
         for adapter in &adapters {
@@ -157,19 +157,17 @@ pub fn run_app() {
 
     // Setup VR
     #[cfg(feature = "vr")]
-    let xr_instance = instance
-        .create_xr_instance("gfx-rs quad", 1, None, None, &[], &[])
-        .expect("Failed to create XR instance");
-
-    let mut renderer = Renderer::new(instance, surface, adapter);
-
-    #[cfg(feature = "vr")]
     {
+        log::info!("Vulkan instance info: {:?}", instance.extensions);
+        let xr_instance = instance
+            .create_xr_instance("gfx-rs quad", 1, None, None, &[], &[])
+            .expect("Failed to create XR instance");
         let xr_system = xr_instance.get_system(XrFormFactor::HeadMountedDisplay);
-        let _session = xr_instance.create_session(&xr_system, &renderer.device);
+        let _session = xr_instance.create_session(&xr_system);
     }
 
-    renderer.render();
+    #[cfg(not(feature = "vr"))]
+    let mut renderer = Renderer::new(instance, surface, adapter);
 
     // It is important that the closure move captures the Renderer,
     // otherwise it will not be dropped when the event loop exits.
